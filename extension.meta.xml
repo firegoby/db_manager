@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<extension id="db_manager" status="experimental" xmlns="http://getsymphony.com/schemas/extension/1.0">
+    <name>Database Manager</name>
+    <description>Provides database management features with a easy to use UI</description>
+    <repo type="github">https://github.com/firegoby/db_manager</repo>
+    <types>
+        <type>Interface</type>
+        <type>Workflow</type>
+    </types>
+    <authors>
+        <author>
+            <name github="firegoby" symphony="firegoby">Chris Batchelor</name>
+            <website>http://firegoby.com/</website>
+        </author>
+    </authors>
+    <releases>
+        <release version="0.1.0" date="2016-03-12" min="2.6" />
+    </releases>
+</extension>
