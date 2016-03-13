@@ -1,3 +1,7 @@
 #db_manager_container {
     padding: 2em 1em 4em;
 }
+
+.db_manager__button_help {
+    margin-left: 1em;
+}
