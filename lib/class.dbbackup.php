@@ -66,8 +66,34 @@ class DbBackup {
         return false;
     }
 
+    // Restore the backup from raw SQL, return true on success
+    public function restore() {
+        $mysql_bin = Symphony::Configuration()->get('mysql_bin', 'db_manager');
+        $db_host = Symphony::Configuration()->get('host', 'database');
+        $db_port = Symphony::Configuration()->get('port', 'database');
+        $db_name = Symphony::Configuration()->get('db', 'database');
+        $db_user = Symphony::Configuration()->get('user', 'database');
+        $db_password = Symphony::Configuration()->get('password', 'database');
+
+        $sql_file = self::directory() . pathinfo($this->file(), PATHINFO_FILENAME);
+        $return_value = null;
+        $output = array();
+        $command = "{$mysql_bin} --host={$db_host} --port={$db_port} --user={$db_user} --password={$db_password} {$db_name} < {$sql_file} 2>&1";
+
+        exec($command, $output, $return_value);
+        $this->setExecutedCommand($command);
+        unlink($sql_file);
+
+        if ($return_value == 0) {
+            return true;
+        }
+
+        $this->setError($return_value, $output);
+        return false;
+    }
+
     // Compress the backup with gzip, return true on success
-    public function compress() {
+    public function zip() {
         $gzip_bin = Symphony::Configuration()->get('gzip_bin', 'db_manager');
         $command = "{$gzip_bin} -9 {$this->file()} 2>&1"; // gzip automatically deletes the input file for us
         $return_value = null;
@@ -78,6 +104,33 @@ class DbBackup {
 
         if ($return_value == 0) {
             $this->filename .= '.gz';
+            return true;
+        }
+
+        $this->setError($return_value, $output);
+        return false;
+    }
+
+    // Uncompress the backup with gzip, return true on success
+    public function unzip() {
+        if (is_null($this->filename)) {
+            return false;
+        }
+
+        $parts = pathinfo($this->filename);
+        if ($parts['extension'] != 'gz') {
+            return false;
+        }
+
+        $gunzip_bin = Symphony::Configuration()->get('gunzip_bin', 'db_manager');
+        $return_value = null;
+        $output = array();
+        $command = "{$gunzip_bin} --keep --force {$this->file()} 2>&1";
+
+        exec($command, $output, $return_value);
+        $this->setExecutedCommand($command);
+
+        if ($return_value == 0) {
             return true;
         }
 

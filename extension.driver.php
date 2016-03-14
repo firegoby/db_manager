@@ -22,12 +22,14 @@ class Extension_db_manager extends Extension {
         Symphony::Configuration()->set('query_log', 'db_query_log.sql', 'db_manager');
         Symphony::Configuration()->set('mysqldump_bin', '/usr/bin/mysqldump', 'db_manager');
         Symphony::Configuration()->set('gzip_bin', '/bin/gzip', 'db_manager');
+        Symphony::Configuration()->set('mysql_bin', '/usr/bin/mysqldump', 'db_manager');
+        Symphony::Configuration()->set('gunzip_bin', '/bin/gunzip', 'db_manager');
         Symphony::Configuration()->write();
         return true;
     }
 
     public function update($previous_version = false) {
-        if(version_compare($previousVersion, '0.2.0', '<')) {
+        if(version_compare($previousVersion, '0.3.0', '<')) {
         }
         return true;
     }
