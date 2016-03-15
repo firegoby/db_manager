@@ -2,16 +2,16 @@
 
 ## Database Management for Symphony CMS
 
- - **Version**: 0.3.0
+ - **Version**: 0.4.0
  - **Status**: Experimental
- - **Latest Release**: 14th March 2016
+ - **Latest Release**: 15th March 2016
  - **Author**: Chris Batchelor, [Firegoby Design](http://firegoby.com/) 
 
 ## Features
 
  - One-click timestamped database backup (via a gzip'd MySQL dump)
  - One-click database restore (from a gzip'd MySQL dump)
- - TODO (0.4.0): Database backup archive (restore from multiple time points)
+ - Database backup archive (restore from multiple time points)
  - TODO (0.5.0): Database Changes Tracker (synchronise database instances)
  - TODO (0.6.0): Preferences Panel for Settings
  - TODO (0.7.0): Browsable QueryLog (monitor Database Changes Tracker)
@@ -30,4 +30,6 @@
 1. Go to `System > Database Manager`
 2. To create a new timestamped backup of the current database click the green `Backup the Database` button
 3. To overwrite the current database with the latest saved backup click the 'Restore from Latest Backup' button
+4. To restore from a specific backup, select/highlight it in the `Database Backups` list and then choose `Restore from this backup` from the `With Selected...` menu
+5. To delete a specific backup, select/highlight it in the `Database Backups` list and then choose `Delete` from the `With Selected...` menu. Multiple backups can be deleted at the same time by Ctrl- or Cmd- clicking to select them.
 

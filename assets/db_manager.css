@@ -1,7 +1,20 @@
 #db_manager_container {
-    padding: 2em 1em 4em;
+    padding: 2em 0 4em;
+}
+
+.db_manager__frame {
+    margin: 0 2em;
 }
 
 .db_manager__button_help {
     margin-left: 1em;
+}
+
+.db_manager__archive {
+    margin-top: 3em;
+}
+
+.db_manager__subheading {
+    font-size: 1.2em;
+    margin-left: 1.3em;
 }

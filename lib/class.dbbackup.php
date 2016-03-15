@@ -9,6 +9,7 @@ class DbBackup {
     private $failed = false;
     private $command_output = null;
     private $return_value = null;
+    private $date_format = 'Y-m-d-H-i-s';
 
     public function __construct($filename = null) {
         $db_name = Symphony::Configuration()->get('db', 'database');
@@ -46,7 +47,7 @@ class DbBackup {
         $db_password = Symphony::Configuration()->get('password', 'database');
 
         if (is_null($this->filename)) {
-            $this->filename = $db_name . '-' . date('Y-m-d-H-i-s') . '.sql';
+            $this->filename = $db_name . '-' . date($this->date_format) . '.sql';
         }
         else {
             return false; // don't support replacing an existing backup for now
@@ -163,6 +164,15 @@ class DbBackup {
     // Return the command that was last executed
     public function executedCommand() {
         return $this->executed_command;
+    }
+
+    // Return a date object of the backups creation time
+    public function getDate() {
+        $db_name = Symphony::Configuration()->get('db', 'database');
+        $needles = [self::directory(), $db_name . '-', '.sql.gz'];
+        $date_string = str_replace($needles, '', $this->filename());
+        $date = DateTime::createFromFormat($this->date_format, $date_string);
+        return $date; 
     }
 }
 

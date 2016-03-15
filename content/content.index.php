@@ -24,20 +24,29 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
             __('Database Manager')
         );
 
-        $container = new XMLElement('div', NULL, array('id' => 'db_manager_container'));
-
-        $form = Widget::Form(Symphony::Engine()->getCurrentPageURL(), 'post');
         if (Symphony::Engine()->isXSRFEnabled()) {
-            $form->prependChild(XSRF::formToken());
+            $this->Form->prependChild(XSRF::formToken());
         }
 
-        $backup_frame = new XMLElement('span', NULL, array('class' => 'frame'));
+        $container = new XMLElement('div', NULL, array('id' => 'db_manager_container'));
+
+        $container->appendChild($this->generateBackupFrame());
+        $container->appendChild($this->generateRestoreFrame());
+        $container->appendChild($this->generateArchiveTable());
+
+        $this->Form->appendChild($container);
+    }
+
+    public function generateBackupFrame() {
+        $backup_frame = new XMLElement('span', NULL, array('class' => 'frame db_manager__frame'));
         $backup_button = new XMLElement('button', __('Backup the Database'));
         $backup_button->setAttributeArray(array('name' => 'action[db-manager-backup]', 'class' => 'button create confirm', 'title' => __('Create a backup of the current database'), 'accesskey' => 'b', 'data-message' => __('Are you sure you want to BACKUP the current database?')));
         $backup_help = new XMLElement('span', 'This will attempt to create a time-stamped gzip&rsquo;d SQL backup of the entire database and save it in the directory "<strong>' . DbBackup::directory() . '</strong>"', ['class' => 'db_manager__button_help']);
         $backup_frame->appendChildArray([$backup_button, $backup_help]);
-        $form->appendChild($backup_frame);
+        return $backup_frame;
+    }
 
+    public function generateRestoreFrame() {
         $latest = BackupManager::getLatest();
         if ($latest) {
             $restore_button = new XMLElement('button', __('Restore from Lastest Backup'));
@@ -48,24 +57,116 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
             $restore_button = new XMLElement('button', __('Restore from Lastest Backup'), ['class' => 'button disabled']);
             $restore_help = new XMLElement('span', 'There are no available database backups to restore from in "<strong>' . DbBackup::directory() . '</strong>"', ['class' => 'db_manager__button_help']);
         }
-        $restore_frame = new XMLElement('span', NULL, array('class' => 'frame'));
+        $restore_frame = new XMLElement('span', NULL, array('class' => 'frame db_manager__frame'));
         $restore_frame->appendChildArray([$restore_button, $restore_help]);
-        $form->appendChild($restore_frame);
+        return $restore_frame;
+    }
 
-        $container->appendChild($form);
+    public function generateArchiveTable() {
+        $backups = array_reverse(BackupManager::getBackupList());
 
-        $this->Contents->appendChild($container);
+        $thead = array(
+            [__('Archive'), 'col'],
+            [__('Date'), 'col'],
+            [__('Time'), 'col']
+        );
+        $tbody = array();
+
+        if (empty($backups)) {
+            $tbody = array(Widget::TableRow([
+                    Widget::TableData(__('No previous backups available. Create one now using the "Backup the Database" button above.'), 'inactive', null, count($thead))
+                ])
+            );
+        }
+        else {
+            foreach ($backups as $id => $backup) {
+                $current = new DbBackup($backup);
+
+                $col_name = Widget::TableData($current->filename());
+                $col_name->appendChild(Widget::Input("selected[]", "{$current->filename()}", 'checkbox'));
+                $col_date = Widget::TableData(date_format($current->getDate(), 'D j M Y'));
+                $col_time = Widget::TableData(date_format($current->getDate(), 'H:i:s'));
+
+                $tbody[] = Widget::TableRow([$col_name, $col_date, $col_time], null);
+            }
+        }
+
+        $table = Widget::Table(
+            Widget::TableHead($thead), null,
+            Widget::TableBody($tbody), 'selectable', null,
+            array('role' => 'directory', 'aria-labelledby' => 'symphony-subheading', 'data-interactive' => 'data-interactive')
+        );
+
+        $options = array(
+            array(null, false, __('With Selected...')),
+            array('restore', false, __('Restore from this backup')),
+            array('delete', false, __('Delete'), 'confirm', null, array(
+                'data-message' => __('Are you sure you want to DELETE the selected backups?')
+            ))
+        );
+
+        $table_actions = new XMLElement('div');
+        $table_actions->setAttribute('class', 'actions');
+        $table_actions->appendChild(Widget::Apply($options));
+
+        $heading = new XMLElement('h3', 'Database Backups', ['class' => 'db_manager__subheading']);
+
+        $container = new XMLElement('div', null, ['class' => 'db_manager__archive']);
+        $container->appendChildArray([$heading, $table, $table_actions]);
+
+        return $container;
     }
 
     public function __actionIndex()
     {
-        if(isset($_POST['action']['db-manager-backup'])){
+        if (isset($_POST['action']['db-manager-backup'])){
             $this->backupAction();
             return;
         }
 
-        if(isset($_POST['action']['db-manager-restore'])){
-            $this->restoreAction();
+        if (isset($_POST['action']['db-manager-restore'])){
+            $latest = BackupManager::getLatest();
+            $this->restoreAction($latest);
+            return;
+        }
+
+        if (isset($_POST['with-selected']) && $_POST['with-selected'] == 'delete') {
+            $done = 0;
+            $count = count($_POST['selected']);
+            foreach ($_POST['selected'] as $file) {
+                if (unlink($file)) {
+                    $done++;
+                }
+            }
+            if ($count == $done) {
+                if ($count > 1) {
+                    $message = 'The database backups were deleted.';
+                }
+                else {
+                    $message = 'The database backup was deleted.';
+                }
+                $this->pageAlert(__($message), Alert::SUCCESS);
+                return;
+            }
+            else {
+                if ($count > 1) {
+                    $message = 'Error: The database backups counld not be deleted.';
+                }
+                else {
+                    $message = 'Error: The database backup could not be deleted.';
+                }
+                $this->pageAlert(__($message), Alert::ERROR);
+                return;
+            }
+        }
+
+        if (isset($_POST['with-selected']) && $_POST['with-selected'] == 'restore') {
+            if (count($_POST['selected']) > 1) {
+                $this->pageAlert(__('Multiple backups were selected for restore. Please select just <strong>one backup</strong>, and try again.'), Alert::ERROR);
+                return;
+            }
+            $chosen = new DbBackup(basename($_POST['selected'][0]));
+            $this->restoreAction($chosen);
             return;
         }
     }
@@ -85,17 +186,16 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
         return;
     }
 
-    private function restoreAction() {
-        $latest = BackupManager::getLatest();
-        if ($latest->unzip()) {
-            if ($latest->restore()) {
-                $this->notifyRestoreSuccess($latest);
+    private function restoreAction($backup) {
+        if ($backup->unzip()) {
+            if ($backup->restore()) {
+                $this->notifyRestoreSuccess($backup);
                 return;
             }
-            $this->notifyRestoreFailure($latest);
+            $this->notifyRestoreFailure($backup);
             return;
         }
-        $this->notifyUnzipFailure($latest);
+        $this->notifyUnzipFailure($backup);
         return;
     }
 
