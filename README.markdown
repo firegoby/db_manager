@@ -2,9 +2,9 @@
 
 ## Database Management for Symphony CMS
 
- - **Version**: 0.5.0
+ - **Version**: 0.6.0
  - **Status**: Experimental
- - **Latest Release**: 25th April 2016
+ - **Latest Release**: 26th April 2016
  - **Author**: Chris Batchelor, [Firegoby Design](http://firegoby.com/) 
 
 ## Features
@@ -13,8 +13,9 @@
  - One-click database restore (from a gzip'd MySQL dump)
  - Database backup archive (restore from multiple time points)
  - Database Changes Tracker (synchronise database instances)
- - TODO (0.6.0): Preferences Panel for Settings
+ - Auto-tag backups with human friendly codename (e.g. brainy-bee, prickly-bison, etc)
  - TODO (0.7.0): Browsable QueryLog (monitor Database Changes Tracker)
+ - TODO (0.8.0): Preferences Panel for Settings
 
 ![Database Manager UI](/screenshots/ui.png)
 

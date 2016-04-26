@@ -37,6 +37,16 @@ class DbBackup {
         return DOCROOT . Symphony::Configuration()->get('directory', 'db_manager');
     }
 
+    // Generate a filename with current datetime and random codename
+    public function generateFilename() {
+        $db_name = Symphony::Configuration()->get('db', 'database');
+        $adjectives = ["adventurous", "alert", "blushing", "colorful", "drab", "distinct", "elegant", "excited", "fancy", "glamorous", "gleaming", "graceful", "grotesque", "light", "magnificent", "misty", "muddy", "precious", "shiny", "sparkling", "spotless", "stormy", "strange", "unusual", "brainy", "busy", "cautious", "clever", "clumsy", "curious", "doubting", "famous", "frail", "gifted", "helpful", "innocent", "inquisitive", "modern", "mushy", "odd", "prickly", "puzzled", "real", "shy", "sleepy", "talented", "tame", "tender", "vast", "wandering", "wild", "wrong", "agreeable", "amused", "brave", "calm", "charming", "cheerful", "comfortable", "cooperative", "courageous", "delightful", "determined", "eager", "elated", "enchanting", "encouraging", "energetic", "enthusiastic", "excited", "exuberant", "faithful", "fantastic", "fine", "friendly", "funny", "gentle", "glorious", "happy", "hilarious", "jolly", "joyous", "kindly", "lively", "lucky", "perfect", "pleasant", "proud", "silly", "smiling", "splendid", "thankful", "thoughtful", "victorious", "vivacious", "witty", "zealous", "zany"];
+        $animals = ["aardvark", "albatross", "alligator", "alpaca", "ant", "anteater", "antelope", "ape", "armadillo", "herd", "baboon", "badger", "barracuda", "bat", "bear", "beaver", "bee", "bison", "boar", "galago", "butterfly", "camel", "caribou", "cat", "caterpillar", "cattle", "chamois", "cheetah", "chicken", "chimpanzee", "chinchilla", "chough", "clam", "cobra", "cockroach", "cod", "cormorant", "coyote", "crab", "herd", "crocodile", "crow", "curlew", "deer", "dinosaur", "dog", "dolphin", "donkey", "dotterel", "dove", "dragonfly", "duck", "dugong", "dunlin", "eagle", "echidna", "eel", "elephant", "elk", "emu", "falcon", "ferret", "finch", "fish", "flamingo", "fly", "fox", "frog", "gaur", "gazelle", "gerbil", "giraffe", "gnat", "goat", "goose", "goldfish", "gorilla", "goshawk", "grasshopper", "grouse", "guanaco", "poultry", "herd", "gull", "hamster", "hare", "hawk", "hedgehog", "heron", "herring", "hippopotamus", "hornet", "horse", "human", "hummingbird", "hyena", "jackal", "jaguar", "jay", "jellyfish", "kangaroo", "koala", "kouprey", "kudu", "lapwing", "lark", "lemur", "leopard", "lion", "llama", "lobster", "locust", "loris", "louse", "lyrebird", "magpie", "mallard", "manatee", "marten", "meerkat", "mink", "monkey", "moose", "mouse", "mosquito", "mule", "narwhal", "newt", "nightingale", "octopus", "okapi", "opossum", "oryx", "ostrich", "otter", "owl", "ox", "oyster", "parrot", "partridge", "peafowl", "pelican", "penguin", "pheasant", "pig", "pigeon", "pony", "porcupine", "porpoise", "quail", "quelea", "rabbit", "raccoon", "rat", "raven", "herd", "reindeer", "rhinoceros", "ruff", "salamander", "salmon", "sandpiper", "sardine", "scorpion", "herd", "seahorse", "shark", "sheep", "shrew", "shrimp", "skunk", "snail", "snake", "spider", "squid", "squirrel", "starling", "stingray", "stinkbug", "stork", "swallow", "swan", "tapir", "tarsier", "termite", "tiger", "toad", "trout", "poultry", "turtle", "vulture", "wallaby", "walrus", "wasp", "carabeef", "weasel", "whale", "wolf", "wolverine", "wombat", "woodcock", "woodpecker", "worm", "wren", "yak", "zebra"];
+        $adjective = array_rand($adjectives);
+        $animal = array_rand($animals);
+       return  $db_name . '-' . date($this->date_format) . '--' . $adjectives[$adjective] . '-' . $animals[$animal] . '.sql';
+    }
+
     // Dump the database into a SQL file, return true on success
     public function dump() {
         $mysqldump_bin = Symphony::Configuration()->get('mysqldump_bin', 'db_manager');
@@ -47,7 +57,8 @@ class DbBackup {
         $db_password = Symphony::Configuration()->get('password', 'database');
 
         if (is_null($this->filename)) {
-            $this->filename = $db_name . '-' . date($this->date_format) . '.sql';
+            //$this->filename = $db_name . '-' . date($this->date_format) . '.sql';
+            $this->filename = $this->generateFilename();
         }
         else {
             return false; // don't support replacing an existing backup for now
@@ -169,8 +180,9 @@ class DbBackup {
     // Return a date object of the backups creation time
     public function getDate() {
         $db_name = Symphony::Configuration()->get('db', 'database');
+        $no_codename = preg_replace('/--[a-z]+-[a-z]+/', '', $this->filename());
         $needles = [self::directory(), $db_name . '-', '.sql.gz'];
-        $date_string = str_replace($needles, '', $this->filename());
+        $date_string = str_replace($needles, '', $no_codename);
         $date = DateTime::createFromFormat($this->date_format, $date_string);
         return $date; 
     }
