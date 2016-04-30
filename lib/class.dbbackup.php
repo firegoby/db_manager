@@ -177,6 +177,14 @@ class DbBackup {
         return $this->executed_command;
     }
 
+    // Return the human friendly codename assigned to the backup
+    public function getCodeName() {
+        if (!$this->filename()) return false;
+        $matches = [];
+        preg_match('/--([a-z]+)-([a-z]+).sql.gz$/', $this->filename(), $matches);
+        return ucfirst($matches[1]) . ' ' . ucfirst($matches[2]);
+    }
+
     // Return a date object of the backups creation time
     public function getDate() {
         $db_name = Symphony::Configuration()->get('db', 'database');

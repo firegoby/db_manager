@@ -2,9 +2,9 @@
 
 ## Database Management for Symphony CMS
 
- - **Version**: 0.6.0
+ - **Version**: 0.7.0
  - **Status**: Experimental
- - **Latest Release**: 26th April 2016
+ - **Latest Release**: 30th April 2016
  - **Author**: Chris Batchelor, [Firegoby Design](http://firegoby.com/) 
 
 ## Features
@@ -12,10 +12,11 @@
  - One-click timestamped database backup (via a gzip'd MySQL dump)
  - One-click database restore (from a gzip'd MySQL dump)
  - Database backup archive (restore from multiple time points)
- - Database Changes Tracker (synchronise database instances)
+ - Database Changes Logger (synchronise database instances)
  - Auto-tag backups with human friendly codename (e.g. brainy-bee, prickly-bison, etc)
- - TODO (0.7.0): Browsable QueryLog (monitor Database Changes Tracker)
- - TODO (0.8.0): Preferences Panel for Settings
+ - UI for setting Database Logger Options
+ - TODO (0.8.0): Browsable QueryLog (monitor Database Changes Logger)
+ - TODO (0.9.0): Preferences Panel for Settings Page
 
 ![Database Manager UI](/screenshots/ui.png)
 
@@ -34,12 +35,12 @@
 4. To restore from a specific backup, select/highlight it in the `Database Backups` list and then choose `Restore from this backup` from the `With Selected...` menu
 5. To delete a specific backup, select/highlight it in the `Database Backups` list and then choose `Delete` from the `With Selected...` menu. Multiple backups can be deleted at the same time by Ctrl- or Cmd- clicking to select them.
 
-## Database Changes Tracker
+## Database Changes Logger
 
-> To enable this feature set `enable_logging` to `yes` in `config.php`
+> To enable this feature tick the `Enable Database Logging` checkbox in the `Database Logging Options` section of `System > Database Manager` page.
 
 This feature will monitor all Symphony's database queries and store any that make structural changes to a SQL log file that can be 'replayed' on other copies of the same database (e.g. testing, production) in order to synchronise them.
 
-The logging can also track & log changes to Authors and Content as well, alternatively such changes can be added only as comments to the log so you can easily review what non-SELECT SQL queries are being made against your database.
+The logging can also log changes to Authors and Content as well, alternatively such changes can be added only as comments to the log so you can easily review what non-SELECT SQL queries are being made against your database.
 
 This feature is heavily based on the great work done by Nick Dunn in his Database Synchronizer extension. Fuller documentation of this feature coming soon.

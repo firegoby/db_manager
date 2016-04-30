@@ -33,8 +33,8 @@ class Extension_db_manager extends Extension {
         Symphony::Configuration()->set('mysql_bin', '/usr/bin/mysqldump', 'db_manager');
         Symphony::Configuration()->set('gunzip_bin', '/bin/gunzip', 'db_manager');
         Symphony::Configuration()->set('enable_logging', 'yes', 'db_manager');
-        Symphony::Configuration()->set('track_authors', 'comment', 'db_manager');
-        Symphony::Configuration()->set('track_content', 'comment', 'db_manager');
+        Symphony::Configuration()->set('log_authors', 'comment', 'db_manager');
+        Symphony::Configuration()->set('log_content', 'comment', 'db_manager');
         Symphony::Configuration()->write();
         return true;
     }
@@ -42,8 +42,8 @@ class Extension_db_manager extends Extension {
     public function update($previous_version = false) {
         if(version_compare($previousVersion, '0.5.0', '<')) {
             Symphony::Configuration()->set('enable_logging', 'yes', 'db_manager');
-            Symphony::Configuration()->set('track_authors', 'comment', 'db_manager');
-            Symphony::Configuration()->set('track_content', 'comment', 'db_manager');
+            Symphony::Configuration()->set('log_authors', 'comment', 'db_manager');
+            Symphony::Configuration()->set('log_content', 'comment', 'db_manager');
             Symphony::Configuration()->write();
         }
         return true;

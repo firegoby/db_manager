@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <extension id="db_manager" status="experimental" xmlns="http://getsymphony.com/schemas/extension/1.0">
     <name>Database Manager</name>
-    <description>Provides database management features with a easy to use UI</description>
+    <description>Provides database management features with an easy to use UI</description>
     <repo type="github">https://github.com/firegoby/db_manager</repo>
     <types>
         <type>Interface</type>
@@ -14,6 +14,6 @@
         </author>
     </authors>
     <releases>
-        <release version="0.5.0" date="2016-04-25" min="2.6" />
+        <release version="0.7.0" date="2016-04-30" min="2.6" />
     </releases>
 </extension>

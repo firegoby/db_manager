@@ -33,6 +33,7 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
         $container->appendChild($this->generateBackupFrame());
         $container->appendChild($this->generateRestoreFrame());
         $container->appendChild($this->generateArchiveTable());
+        $container->appendChild($this->generateTrackerOptions());
 
         $this->Form->appendChild($container);
     }
@@ -41,7 +42,7 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
         $backup_frame = new XMLElement('span', NULL, array('class' => 'frame db_manager__frame'));
         $backup_button = new XMLElement('button', __('Backup the Database'));
         $backup_button->setAttributeArray(array('name' => 'action[db-manager-backup]', 'class' => 'button create confirm', 'title' => __('Create a backup of the current database'), 'accesskey' => 'b', 'data-message' => __('Are you sure you want to BACKUP the current database?')));
-        $backup_help = new XMLElement('span', 'This will attempt to create a time-stamped gzip&rsquo;d SQL backup of the entire database and save it in the directory "<strong>' . DbBackup::directory() . '</strong>"', ['class' => 'db_manager__button_help']);
+        $backup_help = new XMLElement('span', 'This will attempt to create a gzip&rsquo;d SQL backup of the entire database and save it in "<strong>' . DbBackup::directory() . '</strong>"', ['class' => 'db_manager__button_help']);
         $backup_frame->appendChildArray([$backup_button, $backup_help]);
         return $backup_frame;
     }
@@ -51,7 +52,7 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
         if ($latest) {
             $restore_button = new XMLElement('button', __('Restore from Lastest Backup'));
             $restore_button->setAttributeArray(array('name' => 'action[db-manager-restore]', 'class' => 'button delete confirm', 'title' => __('Restore the database from latest backup'), 'accesskey' => 'b', 'data-message' => __('Are you sure you want to RESTORE the database? This will OVERWRITE your current database! All data in the current database will be LOST. Think VERY CAREFULLY before proceeding!')));
-            $restore_help = new XMLElement('span', 'This will attempt to restore the database from the latest available backup "<strong>' . BackupManager::getLatest()->file() . '</strong>"', ['class' => 'db_manager__button_help']);
+            $restore_help = new XMLElement('span', 'This will attempt to restore the database from the latest available backup "<strong>' . BackupManager::getLatest()->getCodeName() . '</strong>"', ['class' => 'db_manager__button_help']);
         }
         else {
             $restore_button = new XMLElement('button', __('Restore from Lastest Backup'), ['class' => 'button disabled']);
@@ -66,9 +67,10 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
         $backups = array_reverse(BackupManager::getBackupList());
 
         $thead = array(
-            [__('Archive'), 'col'],
             [__('Date'), 'col'],
-            [__('Time'), 'col']
+            [__('Time'), 'col'],
+            [__('Codename'), 'col'],
+            [__('Archive'), 'col'],
         );
         $tbody = array();
 
@@ -84,10 +86,11 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
 
                 $col_name = Widget::TableData($current->filename());
                 $col_name->appendChild(Widget::Input("selected[]", "{$current->filename()}", 'checkbox'));
+                $col_codename = Widget::TableData($current->getCodeName());
                 $col_date = Widget::TableData(date_format($current->getDate(), 'D j M Y'));
                 $col_time = Widget::TableData(date_format($current->getDate(), 'H:i:s'));
 
-                $tbody[] = Widget::TableRow([$col_name, $col_date, $col_time], null);
+                $tbody[] = Widget::TableRow([$col_date, $col_time, $col_codename, $col_name], null);
             }
         }
 
@@ -117,9 +120,70 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
         return $container;
     }
 
+    public function generateTrackerOptions() {
+        $log_enabled = Symphony::Configuration()->get('enable_logging', 'db_manager');
+        $log_authors = Symphony::Configuration()->get('log_authors', 'db_manager');
+        $log_content = Symphony::Configuration()->get('log_content', 'db_manager');
+
+        $heading = new XMLElement('h3', 'Database Logging Options', ['class' => 'db_manager__subheading']);
+
+        $options_bar = new XMLElement('div', null, ['class' => 'db_manager__options-bar']);
+
+        $options_bar->appendChild(Widget::Checkbox(
+                'options[log_enabled]',
+                $log_enabled,
+                __('Enable Database Logging')
+            )
+        );
+
+        if ($log_enabled == 'yes') {
+            $options_bar->appendChild(Widget::Label(__('Log Author Changes'),
+                Widget::Select(
+                    'options[log_authors]',
+                    array(
+                        ['no', ($log_authors == 'no' ? TRUE : FALSE), 'No'],
+                        ['comment', ($log_authors == 'comment' ? TRUE : FALSE), 'As Comments Only'],
+                        ['yes', ($log_authors == 'yes' ? TRUE : FALSE), 'Yes'],
+                    )
+                )
+            ));
+
+            $options_bar->appendChild(Widget::Label(__('Log Content Changes'),
+                Widget::Select(
+                    'options[log_content]',
+                    array(
+                        ['no', ($log_content == 'no' ? TRUE : FALSE), 'No'],
+                        ['comment', ($log_content == 'comment' ? TRUE : FALSE), 'As Comments Only'],
+                        ['yes', ($log_content == 'yes' ? TRUE : FALSE), 'Yes'],
+                    )
+                )
+            ));
+        } else {
+            $options_bar->appendChild(Widget::Input('options[log_authors]', $log_authors, 'hidden'));
+            $options_bar->appendChild(Widget::Input('options[log_content]', $log_content, 'hidden'));
+        }
+
+        $save_button = new XMLElement('button', __('Save Logging Options'));
+        $save_button->setAttributeArray(array('name' => 'action[db-manager-save-options]', 'class' => 'button confirm', 'title' => __('Create a backup of the current database'), 'accesskey' => 's', 'data-message' => __('Are you sure you want to save the new logging options?')));
+        $options_bar->appendChild($save_button);
+
+        $options_frame = new XMLElement('div', null, ['class' => 'frame db_manager__frame']);
+        $options_frame->appendChildArray([$options_bar]);
+
+        $container = new XMLElement('div', null, ['class' => 'db_manager__options']);
+        $container->appendChildArray([$heading, $options_frame]);
+
+        return $container;
+    }
+
     public function __actionIndex()
     {
-        if (isset($_POST['action']['db-manager-backup'])){
+        if(isset($_POST['action']['db-manager-save-options'])) {
+            $this->saveOptions();
+            return;
+        }
+
+        if (isset($_POST['action']['db-manager-backup'])) {
             $this->backupAction();
             return;
         }
@@ -169,6 +233,13 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
             $this->restoreAction($chosen);
             return;
         }
+    }
+
+    private function saveOptions() {
+        Symphony::Configuration()->set('enable_logging', $_POST['options']['log_enabled'], 'db_manager');
+        Symphony::Configuration()->set('log_authors', $_POST['options']['log_authors'], 'db_manager');
+        Symphony::Configuration()->set('log_content', $_POST['options']['log_content'], 'db_manager');
+        Symphony::Configuration()->write();
     }
 
     private function backupAction() {

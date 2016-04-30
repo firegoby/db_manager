@@ -17,4 +17,29 @@
 .db_manager__subheading {
     font-size: 1.2em;
     margin-left: 1.3em;
+    margin-bottom: 0.5em;
+}
+
+.db_manager__options-bar {
+    margin-top: 1em;
+    padding-left: 3em;
+}
+
+.db_manager__options-bar label {
+    display: inline-block;
+    margin-right: 5%;
+    -webkit-user-select: none;
+    -moz-user-select: none; 
+    user-select: none;
+    vertical-align: middle;
+    width: 20%;
+}
+
+.db_manager__options-bar label:first-child {
+    margin-top: 0.25em;
+}
+
+.db_manager__options-bar button {
+    position: relative;
+    top: -0.25em;
 }

@@ -24,25 +24,25 @@ class QueryLog {
         // only structural changes, no SELECT statements
         if (!preg_match('/^(insert|update|delete|create|drop|alter|rename)/i', $query)) return;
 
-        // un-tracked tables (sessions, cache, tracker extension)
+        // un-logged tables (sessions, cache, tracker extension)
         if (preg_match("/{$tbl_prefix}(cache|forgotpass|sessions|tracker_activity)/i", $query)) return;
 
-        // track, or not, authors
+        // log, or not, authors
         if (preg_match("/{$tbl_prefix}(authors)/i", $query)) {
-            if (Symphony::Configuration()->get('track_authors', 'db_manager') == 'no') return;
-            // always ignore 'last seen' tracking since it's queried on every admin page load
+            if (Symphony::Configuration()->get('log_authors', 'db_manager') == 'no') return;
+            // always ignore 'last seen' loging since it's queried on every admin page load
             if (preg_match("/^UPDATE {$tbl_prefix}authors SET \`last_seen\`/", trim($query))) return; 
-            // include as comments instead of ignoring completely if track_authors=comment enabled
-            if (Symphony::Configuration()->get('track_authors', 'db_manager') == 'comment') {
+            // include as comments instead of ignoring completely if log_authors=comment enabled
+            if (Symphony::Configuration()->get('log_authors', 'db_manager') == 'comment') {
                 $query = '-- ' . $query; // commentify
             }
         }
 
         // content updates in tbl_entries (includes tbl_entries_fields_*)
         if (preg_match('/^(insert|delete|update)/i', $query) && preg_match("/({$tbl_prefix}entries)/i", $query)) {
-            if (Symphony::Configuration()->get('track_content', 'db_manager') == 'no') return;
-            // include as comments instead of ignoring completely if track_content enabled
-            if (Symphony::Configuration()->get('track_content', 'db_manager') == 'comment') {
+            if (Symphony::Configuration()->get('log_content', 'db_manager') == 'no') return;
+            // include as comments instead of ignoring completely if log_content enabled
+            if (Symphony::Configuration()->get('log_content', 'db_manager') == 'comment') {
                 $query = '-- ' . $query; // commentify
             }
         }
