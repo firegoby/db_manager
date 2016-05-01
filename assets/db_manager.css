@@ -28,15 +28,16 @@
 .db_manager__options-bar label {
     display: inline-block;
     margin-right: 5%;
+    max-width: 15em;
     -webkit-user-select: none;
     -moz-user-select: none; 
     user-select: none;
     vertical-align: middle;
-    width: 20%;
+    width: 15%;
 }
 
 .db_manager__options-bar label:first-child {
-    margin-top: 0.25em;
+    margin-top: 0.35em;
 }
 
 .db_manager__options-bar button {

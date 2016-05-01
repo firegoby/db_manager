@@ -105,7 +105,8 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
             array('restore', false, __('Restore from this backup')),
             array('delete', false, __('Delete'), 'confirm', null, array(
                 'data-message' => __('Are you sure you want to DELETE the selected backups?')
-            ))
+            )),
+            array('download', false, __('Download as a file'))
         );
 
         $table_actions = new XMLElement('div');
@@ -233,6 +234,14 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
             $this->restoreAction($chosen);
             return;
         }
+
+        if (isset($_POST['with-selected']) && $_POST['with-selected'] == 'download') {
+            if (count($_POST['selected']) > 1) {
+                $this->pageAlert(__('Multiple backups were selected for download. Please select just <strong>one backup</strong>, and try again.'), Alert::ERROR);
+                return;
+            }
+            $this->downloadAction($_POST['selected'][0]);
+        }
     }
 
     private function saveOptions() {
@@ -268,6 +277,18 @@ class contentExtensionDb_managerIndex extends contentBlueprintsPages {
         }
         $this->notifyUnzipFailure($backup);
         return;
+    }
+
+    private function downloadAction($backup) {
+        header('Pragma: public');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Cache-Control: private', false); // required for certain browsers
+        header('Content-Type: application/x-gzip');
+        header('Content-Disposition: attachment; filename=' . basename($backup) . ';');
+        header('Content-Transfer-Encoding: binary');
+        header('Content-Length: ' . filesize($backup));
+        print file_get_contents($backup);
     }
 
     private function notifyBackupSuccess($backup) {
